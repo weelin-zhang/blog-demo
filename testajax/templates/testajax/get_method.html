@@ -1,0 +1,58 @@
+{% extends 'testajax/base.html' %}
+{% load staticfiles %}
+{% block title %}get方法{% endblock %}
+
+{% block content %}
+    <p id="sp"></p>
+    <button id="btn">点击get刷新table数据</button>
+    <table class="table table-striped">
+	<caption>条纹表格布局</caption>
+	<thead>
+		<tr>
+			<th>名称</th>
+			<th>城市</th>
+		</tr>
+	</thead>
+	<tbody>
+
+        {% for data in data_l %}
+            <tr>
+                <td>{{ data.name }}</td>
+                <td>{{ data.age }}</td>
+		    </tr>
+        {% endfor %}
+
+	</tbody>
+</table>
+
+{% endblock %}
+
+
+
+{% block custom_script %}
+
+    <script>
+        $(document).ready(function(){
+           $("#btn").click(function(){
+               $.get("{% url 'testajax:backresult' "get" %}", function(data,status){
+                   if (status=="success"){
+                       var data=jQuery.parseJSON(data);
+                       //alert(data.msg);
+                       var tbody_html=""
+                        for (var i=0;i<data.data_l.length;i++)
+                        {
+                            tbody_html=tbody_html+ '<tr>'+ '<td>'+ data.data_l[i].name +'</td>'+ '<td>'+ data.data_l[i].age +'</td></tr>'
+                        }
+                       alert(tbody_html)
+                       $('tbody').html(tbody_html);
+
+
+
+                   }
+                  // alert("Data: " + data + "\nStatus: " + status);
+               });
+           });
+        });
+
+    </script>
+{% endblock %}

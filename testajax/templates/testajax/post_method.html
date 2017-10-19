@@ -1,0 +1,163 @@
+{% extends 'testajax/base.html' %}
+{% load staticfiles %}
+{% block title %}post方法{% endblock %}
+
+{% block content %}
+    <p id="sp"></p>
+    <button id="btn">点击load内容from url</button>
+    <span class="loading1" style="display: none">数据加载中....</span>
+    <table class="table table-striped">
+	<caption>条纹表格布局</caption>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Age</th>
+		</tr>
+	</thead>
+	<tbody id="1">
+
+        {% for data in data_l %}
+            <tr>
+                <td>{{ data.name }}</td>
+                <td>{{ data.age }}</td>
+		    </tr>
+        {% endfor %}
+
+	</tbody>
+</table>
+
+
+
+    <a href="{% url 'testajax:post_method' %}?sort=up"><button  class="btn {% if sort == 'up' %}btn-primary{% else %}btn-default{% endif %}">升序排列</button></a>
+    <a href="{% url 'testajax:post_method' %}?sort=down"><button  class="btn {% if sort == 'down' %}btn-primary{% else %}btn-default{% endif %}">降序排列</button></a>
+    </br>
+    ==================表2=========
+    <span class="loading2" style="display: none">数据加载中....</span>
+    <table class="table table-striped">
+    	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Age</th>
+		</tr>
+	</thead>
+    	<tbody id="2">
+
+        {% for data in data_l %}
+            <tr>
+                <td>{{ data.name }}</td>
+                <td>{{ data.age }}</td>
+		    </tr>
+        {% endfor %}
+	</tbody>
+    </table>
+
+
+<div>
+    <ul class="pagination" id="page2"></ul>
+    <div class="pageJump">
+        <span>跳转到</span>
+        <input style="width: 50px;" type="text" value=""/>
+        <span>页</span>
+        <button type="button" class="button">确定</button>
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block custom_script %}
+
+    <script>
+        $(document).ready(function(){
+           $("#btn").click(function(){
+{#               $.post("{% url 'testajax:get_post' %}",{#}
+{#                        name:"Donald Duck",#}
+{#                        city:"Duckburg",#}
+{#                      }, function(data,status){#}
+{#                           if (status=="success"){#}
+{#                               var tbody_html=''#}
+{#                               var data=jQuery.parseJSON(data);#}
+{#                               console.log(data.msg);#}
+{#                               $.each(data.data_l, function(i, d){#}
+{#                                  tbody_html=tbody_html+ '<tr>'+ '<td>'+ d.name +'</td>'+ '<td>'+ d.age +'</td></tr>'#}
+{#                               });#}
+{#                               $('tbody').html(tbody_html);#}
+{#                           }#}
+{#                  // alert("Data: " + data + "\nStatus: " + status);#}
+{#               });#}
+               $.ajax({
+
+                   async: true,
+                   url: "{% url 'testajax:post_method' %}",
+                   type: "post",
+                   data: {name: "zwj", pwd: "zwj"},
+                   success: function(resp, textStatus){
+                       console.log(textStatus);
+                       console.log("{{ request.user.username }}");
+                       //var data = jQuery.parseJSON(resp);  #如果返回不声明json这里必须转化
+                       var data = resp;
+                       var tbody_html='';
+                       var pages_html='';
+                       $.each(data.data_l, function(i, d){
+                             tbody_html=tbody_html+ '<tr>'+ '<td>'+ d.name +'</td>'+ '<td>'+ d.age +'</td></tr>'
+                       });
+
+                       $('tbody#1').html(tbody_html);
+                       //
+                       //
+                   },
+                   error: function(xhr, error){
+                       console.log(xhr.statusText);
+                       console.log("Sorry:"+error);
+                   },
+                   timeout: 8000,
+                   beforeSend: function(){
+                         $(".loading1").fadeIn("fast");
+                   },
+                   complete: function(){
+                       $(".loading1").fadeOut("slow");
+                   },
+
+               });
+           });
+        });
+
+
+         Page({
+            num: {{ pages }},
+            elem: $('#page2'),
+            callback: function(n) {
+                var sort = 'up';
+                var sort = "{{request.GET.urlencode}}".split('=')[1]
+                console.log('sort:'+sort)
+                console.log(n);
+                $.ajax({
+                    async: true,
+                    url: "{% url 'testajax:post_method' %}",
+                    data: {pageIndex: n, sort: sort},
+                    type: "post",
+                    beforeSend: function(){
+                        $(".loading2").fadeIn("fast");
+                    },
+                    complete: function(){
+                        $(".loading2").fadeOut("slow");
+                    },
+                    success:function(resp){
+                        var tbody2_html='';
+                        console.log(typeof jQuery.parseJSON(resp.data_l))
+                        $.each(jQuery.parseJSON(resp.data_l), function(i,d){
+                            tbody2_html=tbody2_html+'<tr>'+ '<td>'+ d.fields.name +'</td>'+ '<td>'+ d.fields.age +'</td></tr>';
+
+                        });
+                        $('tbody#2').html(tbody2_html);
+
+                    }
+
+
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

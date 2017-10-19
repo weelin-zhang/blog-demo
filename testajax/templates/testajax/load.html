@@ -1,0 +1,32 @@
+{% extends 'testajax/base.html' %}
+{% load staticfiles %}
+{% block title %}load方法{% endblock %}
+
+{% block content %}
+    <p id="sp"></p>
+    <button id="btn">点击load内容from url</button>
+{% endblock %}
+
+
+
+{% block custom_script %}
+
+    <script>
+        $(document).ready(function(){
+           $("#btn").click(function(){
+               var t=100
+               $("#sp").load("{% url 'testajax:backresult' "load" %}", 'data='+t, function(responseTxt,statusTxt,xhr){
+                   if(statusTxt=="success") {
+                       alert("外部内容加载成功！");
+                   }
+                    if(statusTxt=="error") {
+                        alert("Error: " + xhr.status + ": " + xhr.statusText);
+                    }
+               });
+               //$("#sp").load("{% url 'testajax:backresult' 'load' %}", 'data='+t)
+               //$("#sp").load("{% url 'testajax:backresult' 'load' %}");
+           });
+        });
+
+    </script>
+{% endblock %}
